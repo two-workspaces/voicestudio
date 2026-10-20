@@ -11,6 +11,7 @@ It's one service and a Railway volume.
 - **Locked from the first boot.** A random admin key (`OMNIVOICE_API_KEY`) is generated at deploy time. The web UI asks for it once and swaps it for a short-lived browser session; API clients send it as a Bearer token. Without it, everything except the page shell is refused.
 - **HTTPS out of the box.** Railway terminates TLS, so the key and session cookie never travel in plain text.
 - **Models and voices survive redeploys.** The project database, your cloned voices, settings and the Hugging Face model cache all live on the volume at `/app/omnivoice_data`.
+- **Lean on memory.** Cached files the server isn't using are dropped every 5 minutes, because Railway bills the cache as RAM: about 600 MB idle before the first generation instead of 2 GB.
 - **CPU inference, tuned.** Railway has no GPUs, so VoiceStudio runs on CPU. The template caps PyTorch at your plan's vCPUs (`OMP_NUM_THREADS`, default 8). Without that cap PyTorch sees the host's 48 cores, oversubscribes the 8 it's allowed, and a single sentence took over 15 minutes in our tests; with it, a short sentence takes about 20 seconds.
 
 ## Common Use Cases
@@ -48,7 +49,7 @@ curl https://<your-app>.up.railway.app/v1/audio/speech \
 
 Apps in the same Railway project can call `http://${{VoiceStudio.RAILWAY_PRIVATE_DOMAIN}}:3900` instead, with the same key. That traffic isn't billed as egress.
 
-**Resources and cost.** The image is about 6 GB (it ships PyTorch), so it needs the Hobby plan or higher. Before the first generation the service uses about 2 GB of RAM. Once a model is loaded, Railway meters about 6 GB: roughly 2.3 GB for the process plus 3.7 GB of model files the kernel keeps cached. At Railway's memory pricing that's around $60 a month if left running, so remove the service (or scale it down) when you're not using it. The default model takes about 3.4 GB of the 5 GB Hobby volume; grow the volume (Pro) or remove models you don't use from the Model Catalogue before installing more.
+**Resources and cost.** The image is about 6 GB (it ships PyTorch), so it needs the Hobby plan or higher. Railway bills cached files as memory, so every 5 minutes the template drops cached files the server isn't using; that saves about 1.5 GB. Measured on Railway: about 600 MB of RAM before the first generation and about 4.8 GB once a model is loaded. VoiceStudio keeps most of that memory even after it unloads an idle model, so at Railway's memory pricing a used instance costs around $48 a month if left running. Remove the service (or scale it down) when you're not using it. The default model takes about 3.4 GB of the 5 GB Hobby volume; grow the volume (Pro) or remove models you don't use from the Model Catalogue before installing more.
 
 **Updates.** The template pins a VoiceStudio release. To upgrade, change the image tag on the service to a newer `ghcr.io/debpalash/voicestudio:<version>` and redeploy; your data stays on the volume.
 

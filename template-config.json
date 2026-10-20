@@ -5,7 +5,7 @@
       "name": "VoiceStudio",
       "build": {},
       "deploy": {
-        "startCommand": null,
+        "startCommand": "/bin/sh -c \"(while sleep 300; do find / /app/omnivoice_data -xdev -type f -size +64k 2>/dev/null | while read -r f; do dd if=$f iflag=nocache count=0 status=none 2>/dev/null; done; done) & exec python3 -m uvicorn backend.main:app --host 0.0.0.0 --port 3900\"",
         "healthcheckPath": "/health",
         "healthcheckTimeout": 600,
         "restartPolicyType": "ON_FAILURE",
