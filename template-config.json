@@ -35,6 +35,16 @@
           "description": "Optional Hugging Face token, for gated models and faster downloads",
           "isOptional": true
         },
+        "OMP_NUM_THREADS": {
+          "defaultValue": "8",
+          "description": "CPU threads for inference - match your plan's vCPUs (Hobby 8, Pro up to 32). Without it PyTorch oversubscribes and stalls",
+          "isOptional": false
+        },
+        "MKL_NUM_THREADS": {
+          "defaultValue": "${{OMP_NUM_THREADS}}",
+          "description": "Same thread cap for the math library - leave as is",
+          "isOptional": false
+        },
         "PORT": {
           "defaultValue": "3900",
           "description": "Port Railway routes to - leave as is",

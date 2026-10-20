@@ -11,7 +11,7 @@ It's one service and a Railway volume.
 - **Locked from the first boot.** A random admin key (`OMNIVOICE_API_KEY`) is generated at deploy time. The web UI asks for it once and swaps it for a short-lived browser session; API clients send it as a Bearer token. Without it, everything except the page shell is refused.
 - **HTTPS out of the box.** Railway terminates TLS, so the key and session cookie never travel in plain text.
 - **Models and voices survive redeploys.** The project database, your cloned voices, settings and the Hugging Face model cache all live on the volume at `/app/omnivoice_data`.
-- **CPU inference.** Railway has no GPUs, so VoiceStudio runs on CPU. Short clips take seconds; long audiobooks and video dubbing are slow. Pick a plan with enough RAM (see below).
+- **CPU inference, tuned.** Railway has no GPUs, so VoiceStudio runs on CPU. The template caps PyTorch at your plan's vCPUs (`OMP_NUM_THREADS`, default 8). Without that cap PyTorch sees the host's 48 cores, oversubscribes the 8 it's allowed, and a single sentence took over 15 minutes in our tests; with it, a short sentence takes about 20 seconds.
 
 ## Common Use Cases
 
@@ -35,7 +35,7 @@ It's one service and a Railway volume.
 
 **Sign in.** Open the service's Railway domain. When the UI asks for a key, paste `OMNIVOICE_API_KEY` from the Variables tab. The browser keeps only a short-lived session, not the key.
 
-**First run.** The first model you use downloads its weights (a few GB) into the volume, so the first generation takes a few minutes. After that, models load from the volume.
+**First run.** The first generation downloads the default model (about 3.4 GB) into the volume and loads it, so it takes a minute or two. After that, a 4-second clip takes about 20 seconds on the Hobby plan's 8 vCPUs. Long texts, audiobooks and video dubbing take proportionally longer, so run them from the web UI rather than through a single HTTP request (Railway closes HTTP requests after 5 minutes).
 
 **Use the API.** Send the key as a Bearer token:
 
@@ -43,12 +43,12 @@ It's one service and a Railway volume.
 curl https://<your-app>.up.railway.app/v1/audio/speech \
   -H "Authorization: Bearer <OMNIVOICE_API_KEY>" \
   -H "Content-Type: application/json" \
-  -d '{"input": "Hello from Railway", "voice": "default"}' -o hello.wav
+  -d '{"model": "tts-1", "input": "Hello from Railway", "voice": "alloy", "response_format": "wav"}' -o hello.wav
 ```
 
 Apps in the same Railway project can call `http://${{VoiceStudio.RAILWAY_PRIVATE_DOMAIN}}:3900` instead, with the same key. That traffic isn't billed as egress.
 
-**Resources.** The image is about 6 GB (it ships PyTorch), so it needs the Hobby plan or higher. Speech models use roughly 2–4 GB of RAM while loaded. Railway volumes start at 5 GB on Hobby; if you install several large models, grow the volume (Pro) or remove models you don't use from the Model Catalogue.
+**Resources and cost.** The image is about 6 GB (it ships PyTorch), so it needs the Hobby plan or higher. Before the first generation the service uses about 2 GB of RAM. Once a model is loaded, Railway meters about 6 GB: roughly 2.3 GB for the process plus 3.7 GB of model files the kernel keeps cached. At Railway's memory pricing that's around $60 a month if left running, so remove the service (or scale it down) when you're not using it. The default model takes about 3.4 GB of the 5 GB Hobby volume; grow the volume (Pro) or remove models you don't use from the Model Catalogue before installing more.
 
 **Updates.** The template pins a VoiceStudio release. To upgrade, change the image tag on the service to a newer `ghcr.io/debpalash/voicestudio:<version>` and redeploy; your data stays on the volume.
 
