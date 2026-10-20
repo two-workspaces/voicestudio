@@ -1,0 +1,46 @@
+{
+  "services": {
+    "e8aa4d7e-e45d-46b8-a655-6df6000332f7": {
+      "icon": "https://raw.githubusercontent.com/two-workspaces/voicestudio/main/icon.svg",
+      "name": "VoiceStudio",
+      "build": {},
+      "deploy": {
+        "startCommand": null,
+        "healthcheckPath": "/health",
+        "healthcheckTimeout": 600,
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+      },
+      "source": {
+        "image": "ghcr.io/debpalash/voicestudio:0.5.6"
+      },
+      "networking": {
+        "serviceDomains": {
+          "<hasDomain>": {}
+        }
+      },
+      "volumeMounts": {
+        "090a1ad6-7ee1-4b2f-beb5-53b6930d8b0f": {
+          "mountPath": "/app/omnivoice_data"
+        }
+      },
+      "variables": {
+        "OMNIVOICE_API_KEY": {
+          "defaultValue": "${{secret(43)}}",
+          "description": "Admin key - the web UI asks for it once; also the Bearer token for the API",
+          "isOptional": false
+        },
+        "HF_TOKEN": {
+          "defaultValue": "",
+          "description": "Optional Hugging Face token, for gated models and faster downloads",
+          "isOptional": true
+        },
+        "PORT": {
+          "defaultValue": "3900",
+          "description": "Port Railway routes to - leave as is",
+          "isOptional": false
+        }
+      }
+    }
+  }
+}
