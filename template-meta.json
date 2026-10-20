@@ -5,5 +5,6 @@
   "category": "AI/ML",
   "image": "https://raw.githubusercontent.com/two-workspaces/voicestudio/main/icon.svg",
   "card_desc": "VoiceStudio: the open-source ElevenLabs alternative. Clone voices, generate speech in 600+ languages, dub videos and transcribe audio from a web UI, with an OpenAI-compatible speech API.",
-  "id": "24fb045c-5a5a-432e-8137-51ded76a22c7"
+  "id": "24fb045c-5a5a-432e-8137-51ded76a22c7",
+  "published": true
 }
