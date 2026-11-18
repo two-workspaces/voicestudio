@@ -12,7 +12,7 @@
         "restartPolicyMaxRetries": 10
       },
       "source": {
-        "image": "ghcr.io/debpalash/voicestudio:0.5.6"
+        "image": "ghcr.io/debpalash/voicestudio:0.5.8"
       },
       "networking": {
         "serviceDomains": {
@@ -28,6 +28,11 @@
         "OMNIVOICE_API_KEY": {
           "defaultValue": "${{secret(43)}}",
           "description": "Admin key - the web UI asks for it once; also the Bearer token for the API",
+          "isOptional": false
+        },
+        "OMNIVOICE_DATA_DIR": {
+          "defaultValue": "/app/omnivoice_data",
+          "description": "Where VoiceStudio keeps its database, voices and settings: the volume, so they survive redeploys - leave as is",
           "isOptional": false
         },
         "HF_TOKEN": {

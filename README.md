@@ -36,6 +36,8 @@ It's one service and a Railway volume.
 
 **Sign in.** Open the service's Railway domain. When the UI asks for a key, paste `OMNIVOICE_API_KEY` from the Variables tab. The browser keeps only a short-lived session, not the key.
 
+**Accept the model licence first.** The default voice model, OmniVoice, is released for non-commercial use (CC-BY-NC), and VoiceStudio asks you to accept its terms before it will generate: open **Model Catalogue** in the web UI and accept the OmniVoice licence, which covers its audio tokenizer too. Until then, speech requests, including API calls, are refused with `model_licence_required`. For commercial work, pick a model with a permissive licence in the same catalogue.
+
 **First run.** The first generation downloads the default model (about 3.4 GB) into the volume and loads it, so it takes a minute or two. After that, a 4-second clip takes about 20 seconds on the Hobby plan's 8 vCPUs. Long texts, audiobooks and video dubbing take proportionally longer, so run them from the web UI rather than through a single HTTP request (Railway closes HTTP requests after 5 minutes).
 
 **Use the API.** Send the key as a Bearer token:
